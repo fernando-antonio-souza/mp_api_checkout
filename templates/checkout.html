@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout Seguro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#eef8ff',
+                            100: '#d9eeff',
+                            500: '#0f9ee3',
+                            600: '#0b87c6',
+                            700: '#0a6ca0',
+                        }
+                    },
+                    animation: {
+                        'fade-up': 'fadeUp .5s ease both',
+                        'slide-in': 'slideIn .35s ease both',
+                        'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeUp: {
+                            '0%': { opacity: '0', transform: 'translateY(16px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideIn: {
+                            '0%': { opacity: '0', transform: 'translateX(-12px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        },
+                        pulseSoft: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '.55' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Transições suaves entre painéis de método de pagamento */
+        .method-panel { display: none; }
+        .method-panel.active { display: block; animation: fadeUp .35s ease both; }
+
+        /* Animação do check de sucesso */
+        .check-circle { stroke-dasharray: 166; stroke-dashoffset: 166; animation: dash .6s ease forwards; }
+        .check-mark   { stroke-dasharray: 48;  stroke-dashoffset: 48;  animation: dash .4s .5s ease forwards; }
+        @keyframes dash { to { stroke-dashoffset: 0; } }
+
+        /* Fundo com brilho suave */
+        .ambient-glow {
+            background:
+                radial-gradient(60rem 30rem at 85% -10%, rgba(15,158,227,.10), transparent 60%),
+                radial-gradient(50rem 25rem at 0% 110%, rgba(99,102,241,.08), transparent 60%);
+        }
+
+        input:focus-visible, select:focus-visible { outline: none; }
+    </style>
+</head>
+<body class="font-sans bg-slate-50 text-slate-800 antialiased min-h-screen ambient-glow">
+
+    <!-- ===== Header ===== -->
+    <header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-slate-200/70">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2 animate-fade-up">
+                <svg class="w-8 h-8 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="2" y="5" width="20" height="14" rx="3"/>
+                    <path d="M2 10h20"/>
+                    <circle cx="7" cy="15" r="1" fill="currentColor" stroke="none"/>
+                </svg>
+                <span class="text-lg font-bold tracking-tight text-slate-900">MinhaLoja</span>
+            </a>
+            <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
+                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/>
+                    <path d="M9 12l2 2 4-4"/>
+                </svg>
+                Ambiente seguro — dados criptografados
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 lg:py-12">
+        <div class="grid lg:grid-cols-[1fr_380px] gap-8 items-start">
+
+            <!-- ===== Coluna: Formulário ===== -->
+            <section id="checkout-form-col" class="animate-fade-up">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+
+                    <!-- Etapa 1: Método de pagamento -->
+                    <div class="mb-8">
+                        <div class="flex items-center gap-3 mb-5">
+                            <span class="w-7 h-7 rounded-full bg-brand-500 text-white text-xs font-bold grid place-items-center">1</span>
+                            <h2 class="text-base font-semibold text-slate-900">Como você quer pagar?</h2>
+                        </div>
+
+                        <div class="grid sm:grid-cols-3 gap-3" role="radiogroup" aria-label="Métodos de pagamento">
+                            <!-- Cartão -->
+                            <button type="button" data-method="card" aria-pressed="true"
+                                class="method-btn group relative flex flex-col items-start gap-2 p-4 rounded-xl border-2 text-left transition-all duration-200 border-brand-500 bg-brand-50 shadow-sm">
+                                <span class="absolute top-3 right-3">
+                                    <svg class="w-5 h-5 text-brand-600 opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10" fill="#0f9ee3" stroke="none"/>
+                                        <path d="M8 12.5l2.5 2.5L16 10" stroke="white"/>
+                                    </svg>
+                                </span>
+                                <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/>
+                                </svg>
+                                <span class="font-semibold text-sm text-slate-900">Cartão de crédito</span>
+                                <span class="text-xs text-slate-500">Em até 12x</span>
+                            </button>
+
+                            <!-- Pix -->
+                            <button type="button" data-method="pix" aria-pressed="false"
+                                class="method-btn group relative flex flex-col items-start gap-2 p-4 rounded-xl border-2 text-left transition-all duration-200 border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm">
+                                <span class="absolute top-3 right-3 hidden">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10" fill="#10b981" stroke="none"/>
+                                        <path d="M8 12.5l2.5 2.5L16 10" stroke="white"/>
+                                    </svg>
+                                </span>
+                                <svg class="w-6 h-6 text-slate-400 group-hover:text-emerald-500 transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <path d="M4 6L12 14L20 6"/><path d="M4 13L12 21L20 13"/>
+                                </svg>
+                                <span class="font-semibold text-sm text-slate-900">Pix</span>
+                                <span class="text-xs text-slate-500">Aprovação imediata</span>
+                            </button>
+
+                            <!-- Boleto -->
+                            <button type="button" data-method="boleto" aria-pressed="false"
+                                class="method-btn group relative flex flex-col items-start gap-2 p-4 rounded-xl border-2 text-left transition-all duration-200 border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm">
+                                <span class="absolute top-3 right-3 hidden">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10" fill="#10b981" stroke="none"/>
+                                        <path d="M8 12.5l2.5 2.5L16 10" stroke="white"/>
+                                    </svg>
+                                </span>
+                                <svg class="w-6 h-6 text-slate-400 group-hover:text-brand-600 transition-colors" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <path d="M4 7h16M4 12h10M4 17h16"/><path d="M17 12v5"/>
+                                </svg>
+                                <span class="font-semibold text-sm text-slate-900">Boleto</span>
+                                <span class="text-xs text-slate-500">Vence em 3 dias</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Etapa 2: Dados pessoais -->
+                    <div class="mb-8">
+                        <div class="flex items-center gap-3 mb-5">
+                            <span class="w-7 h-7 rounded-full bg-brand-500 text-white text-xs font-bold grid place-items-center">2</span>
+                            <h2 class="text-base font-semibold text-slate-900">Seus dados</h2>
+                        </div>
+
+                        <div class="grid gap-4">
+                            <div id="boleto-name-grid" class="grid sm:grid-cols-2 gap-4 method-panel active">
+                                <label class="block">
+                                    <span class="text-sm font-medium text-slate-700">Nome</span>
+                                    <input id="first_name" type="text" autocomplete="given-name" placeholder="Como no documento"
+                                        class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                                </label>
+                                <label class="block">
+                                    <span class="text-sm font-medium text-slate-700">Sobrenome</span>
+                                    <input id="last_name" type="text" autocomplete="family-name" placeholder="Como no documento"
+                                        class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                                </label>
+                            </div>
+
+                            <label class="block">
+                                <span class="text-sm font-medium text-slate-700">E-mail</span>
+                                <input id="email" type="email" autocomplete="email" placeholder="voce@email.com"
+                                    class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                            </label>
+
+                            <label class="block max-w-xs">
+                                <span class="text-sm font-medium text-slate-700">CPF <span class="text-slate-400 font-normal">(apenas números)</span></span>
+                                <input id="identification_number" inputmode="numeric" placeholder="000.000.000-00"
+                                    class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Etapa 3: Detalhes do pagamento -->
+                    <div>
+                        <div class="flex items-center gap-3 mb-5">
+                            <span class="w-7 h-7 rounded-full bg-brand-500 text-white text-xs font-bold grid place-items-center">3</span>
+                            <h2 id="step3-title" class="text-base font-semibold text-slate-900">Dados do pagamento</h2>
+                        </div>
+
+                        <!-- ===== Painel: Cartão ===== -->
+                        <div id="panel-card" class="method-panel active space-y-4">
+                            <!-- Número do cartão -->
+                            <div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-slate-700">Número do cartão</span>
+                                    <span id="card-brand" class="text-xs font-semibold text-slate-400 h-4"></span>
+                                </div>
+                                <div class="relative">
+                                    <input id="card_number" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000"
+                                        class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 tracking-wider transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                                    <svg id="card_icon" class="absolute right-3 top-1/2 -translate-y-1/2 mt-0.5 w-5 h-5 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                        <rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Validade + CVV -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="block">
+                                    <span class="text-sm font-medium text-slate-700">Validade</span>
+                                    <input id="card_expiry" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/AA"
+                                        class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                                </label>
+                                <label class="block">
+                                    <span class="text-sm font-medium text-slate-700">CVV</span>
+                                    <input id="security_code" inputmode="numeric" autocomplete="cc-csc" placeholder="123" maxlength="4"
+                                        class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                                </label>
+                            </div>
+
+                            <label class="block">
+                                <span class="text-sm font-medium text-slate-700">Nome impresso no cartão</span>
+                                <input id="cardholder_name" type="text" autocomplete="cc-name" placeholder="Como no cartão"
+                                    class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                            </label>
+
+                            <!-- Parcelas -->
+                            <label class="block">
+                                <span class="text-sm font-medium text-slate-700">Parcelas</span>
+                                <select id="installments"
+                                    class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm bg-white transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 cursor-pointer">
+                                    <option value="" selected disabled>Selecione o número de parcelas</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <!-- ===== Painel: Pix ===== -->
+                        <div id="panel-pix" class="method-panel">
+                            <div class="flex gap-4 p-5 rounded-xl bg-emerald-50 border border-emerald-100 animate-slide-in">
+                                <svg class="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>
+                                </svg>
+                                <div class="text-sm">
+                                    <p class="font-semibold text-emerald-800">Pagamento aprovado na hora</p>
+                                    <p class="mt-1 text-emerald-700/80 leading-relaxed">
+                                        Após confirmar, geramos o QR Code do Pix. Escaneie com o app do seu banco e o pedido
+                                        será processado imediatamente — sem burocracia.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== Painel: Boleto ===== -->
+                        <div id="panel-boleto" class="method-panel">
+                            <p class="text-sm text-slate-500 mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>
+                                </svg>
+                                Endereço de cobrança para o boleto
+                            </p>
+                            <div class="grid gap-4">
+                                <div class="sm:flex gap-4">
+                                    <label class="block max-w-[140px]">
+                                        <span class="text-sm font-medium text-slate-700">CEP</span>
+                                        <input id="zip_code" inputmode="numeric" placeholder="00000-000"
+                                            class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                                    </label>
+                                    <label class="block flex-1">
+                                        <span class="text-sm font-medium text-slate-700">Rua</span>
+                                        <input id="street_name" type="text" placeholder="Nome da rua"
+                                            class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                                    </label>
+                                    <label class="block max-w-[120px]">
+                                        <span class="text-sm font-medium text-slate-700">Número</span>
+                                        <input id="street_number" inputmode="numeric" placeholder="123"
+                                            class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                                    </label>
+                                </div>
+                                <div class="sm:flex gap-4">
+                                    <label class="block flex-1">
+                                        <span class="text-sm font-medium text-slate-700">Bairro</span>
+                                        <input id="neighborhood" type="text" placeholder="Seu bairro"
+                                            class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                                    </label>
+                                    <label class="block flex-1">
+                                        <span class="text-sm font-medium text-slate-700">Cidade</span>
+                                        <input id="city" type="text" placeholder="Sua cidade"
+                                            class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                                    </label>
+                                    <label class="block max-w-[100px]">
+                                        <span class="text-sm font-medium text-slate-700">UF</span>
+                                        <input id="federal_unit" maxlength="2" placeholder="SP"
+                                            class="mt-1.5 w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm placeholder-slate-400 uppercase transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== Botão de pagamento ===== -->
+                    <button id="pay-button" type="button"
+                        class="group relative w-full mt-8 flex items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 py-4 text-white font-semibold text-sm sm:text-base
+                               shadow-lg shadow-brand-500/25 transition-all duration-200 hover:bg-brand-600 hover:shadow-xl hover:shadow-brand-500/30 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:pointer-events-none">
+                        <span id="pay-btn-label">Pagar <span id="btn-total" class="font-extrabold">R$ 299,90</span></span>
+                        <svg id="pay-btn-arrow" class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path d="M5 12h14M13 6l6 6-6 6"/>
+                        </svg>
+                        <svg id="pay-btn-spinner" class="hidden w-5 h-5 animate-spin" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" opacity=".25"/><path d="M22 12a10 10 0 00-10-10" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+
+                    <p class="mt-4 text-center text-xs text-slate-400 flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 118 0v3"/>
+                        </svg>
+                        Pagamento processado pelo Mercado Pago
+                    </p>
+                </div>
+            </section>
+
+            <!-- ===== Coluna: Resumo do pedido ===== -->
+            <aside id="order-summary-col" class="lg:sticky lg:top-24 animate-fade-up" style="animation-delay:.15s">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="relative h-40 bg-gradient-to-br from-brand-500 via-brand-600 to-indigo-600 grid place-items-center overflow-hidden">
+                        <div class="absolute inset-0 opacity-10">
+                            <svg class="w-full h-full" viewBox="0 0 100 50" preserveAspectRatio="none" fill="white">
+                                <circle cx="20" cy="40" r="30"/><circle cx="80" cy="10" r="30"/>
+                            </svg>
+                        </div>
+                        <svg class="w-14 h-14 text-white/90" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24">
+                            <path d="M4 7h16M4 12h10M4 17h16"/><path d="M17 12v5"/>
+                        </svg>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h3 class="font-semibold text-slate-900">Plano Premium Anual</h3>
+                                <p class="text-sm text-slate-400 mt-0.5">Acesso completo por 12 meses</p>
+                            </div>
+                            <span class="shrink-0 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold px-2.5 py-1">+12m de bônus</span>
+                        </div>
+
+                        <ul class="mt-5 space-y-2.5 text-sm text-slate-600">
+                            <li class="flex items-center gap-2.5 animate-slide-in" style="animation-delay:.2s">
+                                <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                Sem taxas adicionais
+                            </li>
+                            <li class="flex items-center gap-2.5 animate-slide-in" style="animation-delay:.3s">
+                                <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                Garantia de reembolso em 7 dias
+                            </li>
+                            <li class="flex items-center gap-2.5 animate-slide-in" style="animation-delay:.4s">
+                                <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                Suporte prioritário 24/7
+                            </li>
+                        </ul>
+
+                        <div class="mt-5 pt-5 border-t border-dashed border-slate-200 text-sm space-y-2">
+                            <div class="flex justify-between text-slate-500">
+                                <span>Subtotal</span><span>R$ 299,90</span>
+                            </div>
+                            <div class="flex justify-between text-slate-500">
+                                <span>Desconto</span><span class="text-emerald-600 font-medium">— R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between pt-2 text-base font-bold text-slate-900">
+                                <span>Total</span>
+                                <span id="summary-total">R$ 299,90</span>
+                            </div>
+                            <p id="installment-preview" class="hidden pt-1 text-xs text-brand-600 font-medium"></p>
+                        </div>
+
+                        <!-- Selo de segurança -->
+                        <div class="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+                            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/>
+                            </svg>
+                            Transação protegida por criptografia
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- ===== Tela de resultado (substitui o formulário) ===== -->
+        <section id="result-screen" class="hidden max-w-lg mx-auto">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-10 text-center animate-fade-up">
+                <!-- Ícone dinâmico -->
+                <div id="result-icon" class="mx-auto w-20 h-20 mb-5"></div>
+
+                <h2 id="result-title" class="text-xl font-bold text-slate-900"></h2>
+                <p id="result-msg" class="mt-2 text-sm text-slate-500"></p>
+
+                <!-- Conteúdo específico do método -->
+                <div id="result-extra" class="mt-6 text-left"></div>
+
+                <a href="/" class="mt-8 inline-flex items-center gap-2 rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Voltar ao início
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast de erro -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden">
+        <div class="flex items-center gap-3 rounded-xl bg-rose-600 text-white px-5 py-3.5 shadow-xl shadow-rose-600/30">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+            </svg>
+            <p id="toast-msg" class="text-sm font-medium"></p>
+        </div>
+    </div>
+
+    <footer class="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-center text-xs text-slate-400">
+        © 2026 MinhaLoja — Todos os direitos reservados
+    </footer>
+
+    <script>
+        // ============================================================
+        // Estado e referências
+        // ============================================================
+        const state = {
+            method: 'card',
+            amount: 299.90,
+            description: 'Plano Premium Anual',
+        };
+
+        const $ = (id) => document.getElementById(id);
+        const formCol = $('checkout-form-col');
+        const summaryCol = $('order-summary-col');
+        const payBtn = $('pay-button');
+
+        // ============================================================
+        // Seleção de método de pagamento
+        // ============================================================
+        const methodBtns = document.querySelectorAll('.method-btn');
+        const panels = {
+            card: $('panel-card'),
+            pix: $('panel-pix'),
+            boleto: $('panel-boleto'),
+        };
+        const stepTitles = {
+            card: 'Dados do pagamento',
+            pix: 'Confirme seu Pix',
+            boleto: 'Endereço de cobrança',
+        };
+        // Campos sempre visíveis para Pix (nome desnecessário)
+        const boletoNameGrid = $('boleto-name-grid');
+
+        methodBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.method = btn.dataset.method;
+
+                // Estilo dos botões com animação dos Checks
+                methodBtns.forEach(b => {
+                    const active = b === btn;
+                    const check = b.querySelector('span.absolute');
+                    b.classList.toggle('border-brand-500', active);
+                    b.classList.toggle('bg-brand-50', active);
+                    b.classList.toggle('shadow-sm', active);
+                    b.classList.toggle('border-slate-200', !active);
+                    b.classList.toggle('bg-white', !active);
+                    b.classList.toggle('hover:border-slate-300', !active);
+                    b.setAttribute('aria-pressed', active);
+                    check.classList.toggle('hidden', !active);
+                });
+
+                // Painéis com transição
+                Object.entries(panels).forEach(([key, panel]) => {
+                    panel.classList.toggle('active', key === state.method);
+                });
+
+                $('step3-title').textContent = stepTitles[state.method];
+                updatePayButtonLabel();
+            });
+        });
+
+        // ============================================================
+        // Parcelas
+        // ============================================================
+        const installmentsSelect = $('installments');
+        for (let i = 1; i <= 12; i++) {
+            const opt = document.createElement('option');
+            opt.value = i;
+            const total = state.amount / i;
+            opt.textContent = i === 1
+                ? `À vista / 1x de ${brl(total)}`
+                : `${i}x de ${brl(total)} sem juros`;
+            installmentsSelect.appendChild(opt);
+        }
+
+        function brl(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        installmentsSelect.addEventListener('change', () => {
+            const n = parseInt(installmentsSelect.value, 10);
+            const preview = $('installment-preview');
+            const perMonth = state.amount / n;
+            preview.textContent = `${n}x de ${brl(perMonth)} — total ${brl(state.amount)}`;
+            preview.classList.remove('hidden');
+            preview.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+        });
+
+        // ============================================================
+        // Máscaras de input
+        // ============================================================
+        const masks = {
+            cpf: (v) => v.replace(/\D/g, '').slice(0, 11)
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+                .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4'),
+            cep: (v) => v.replace(/\D/g, '').slice(0, 8)
+                .replace(/(\d{5})(\d)/, '$1-$2'),
+            card: (v) => v.replace(/\D/g, '').slice(0, 16)
+                .replace(/(\d{4})(?=\d)/g, '$1 '),
+            expiry: (v) => {
+                let d = v.replace(/\D/g, '').slice(0, 4);
+                if (d.length >= 3) d = `${d.slice(0, 2)}/${d.slice(2)}`;
+                return d;
+            },
+        };
+
+        $('identification_number').addEventListener('input', (e) => e.target.value = masks.cpf(e.target.value));
+        $('zip_code').addEventListener('input', (e) => e.target.value = masks.cep(e.target.value));
+        $('card_number').addEventListener('input', (e) => { e.target.value = masks.card(e.target.value); detectBrand(e.target.value); });
+        $('card_expiry').addEventListener('input', (e) => e.target.value = masks.expiry(e.target.value));
+        $('security_code').addEventListener('input', (e) => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4));
+        $('federal_unit').addEventListener('input', (e) => e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2));
+
+        // ============================================================
+        // Detecção de bandeira do cartão
+        // ============================================================
+        function detectBrand(value) {
+            const digits = value.replace(/\D/g, '');
+            const brandEl = $('card-brand');
+            if (/^4/.test(digits))   { brandEl.textContent = 'VISA'; }
+            else if (/^5[1-5]/.test(digits) || /^2[2-7]/.test(digits)) { brandEl.textContent = 'MASTERCARD'; }
+            else if (/^3[47]/.test(digits)) { brandEl.textContent = 'AMEX'; }
+            else if (/^(606282|3841)/.test(digits)) { brandEl.textContent = 'HIPERCARD / ELO'; }
+            else { brandEl.textContent = ''; }
+            brandEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250 });
+        }
+
+        // ============================================================
+        // Validações
+        // ============================================================
+        function isValidCPF(cpf) {
+            const d = cpf.replace(/\D/g, '');
+            if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
+            let sum = 0;
+            for (let i = 0; i < 9; i++) sum += parseInt(d[i]) * (10 - i);
+            let check = (sum * 10) % 11;
+            if (check === 10) check = 0;
+            if (check !== parseInt(d[9])) return false;
+            sum = 0;
+            for (let i = 0; i < 10; i++) sum += parseInt(d[i]) * (11 - i);
+            check = (sum * 10) % 11;
+            if (check === 10) check = 0;
+            return check === parseInt(d[10]);
+        }
+
+        function validate() {
+            const errors = [];
+            const val = (id) => $(id).value.trim();
+
+            if (!/^\S+@\S+\.\S+$/.test(val('email'))) errors.push('Informe um e-mail válido.');
+            if (!isValidCPF(val('identification_number'))) errors.push('Informe um CPF válido.');
+
+            if (state.method === 'card') {
+                const cardNumber = val('card_number').replace(/\D/g, '');
+                if (cardNumber.length < 13) errors.push('Informe o número do cartão.');
+                const m = val('card_expiry').match(/^(\d{2})\/(\d{2})$/);
+                if (!m) errors.push('Informe a validade (MM/AA).');
+                if (!val('security_code')) errors.push('Informe o CVV.');
+                if (!val('cardholder_name')) errors.push('Informe o nome impresso no cartão.');
+                if (!val('installments')) errors.push('Selecione o número de parcelas.');
+            }
+
+            if (state.method === 'boleto') {
+                if (!val('first_name')) errors.push('Informe o nome.');
+                if (!val('last_name')) errors.push('Informe o sobrenome.');
+                ['zip_code', 'street_name', 'street_number', 'neighborhood', 'city', 'federal_unit']
+                    .forEach(id => { if (!val(id)) errors.push('Preencha o endereço completo.'); });
+            }
+
+            // Destaca campos vazios obrigatórios
+            document.querySelectorAll('#checkout-form-col input, #checkout-form-col select').forEach(input => {
+                const methodPanel = input.closest('.method-panel');
+                const visible = !methodPanel || methodPanel.classList.contains('active');
+                input.classList.remove('border-rose-400', 'ring-2', 'ring-rose-400/20');
+                if (visible && input.required !== false && !input.value.trim() && visibleObrigatorio(input)) {
+                    input.classList.add('border-rose-400', 'ring-2', 'ring-rose-400/20');
+                }
+            });
+
+            return errors;
+        }
+
+        function visibleObrigatorio(input) {
+            const id = input.id;
+            const always = ['email', 'identification_number'];
+            if (always.includes(id)) return true;
+            if (state.method === 'card' && ['card_number', 'card_expiry', 'security_code', 'cardholder_name', 'installments'].includes(id)) return true;
+            if (state.method === 'boleto' && ['first_name', 'last_name', 'zip_code', 'street_name', 'street_number', 'neighborhood', 'city', 'federal_unit'].includes(id)) return true;
+            return false;
+        }
+
+        // ============================================================
+        // Envio do pagamento
+        // ============================================================
+        function buildPayload() {
+            const val = (id) => $(id).value.trim();
+            const payload = {
+                payment_method: state.method,
+                transaction_amount: state.amount,
+                description: state.description,
+                email: val('email'),
+                identification_number: val('identification_number').replace(/\D/g, ''),
+            };
+
+            if (state.method === 'card') {
+                const [month, year] = val('card_expiry').split('/');
+                Object.assign(payload, {
+                    card_number: val('card_number').replace(/\D/g, ''),
+                    expiration_month: parseInt(month, 10),
+                    expiration_year: 2000 + parseInt(year, 10),
+                    security_code: val('security_code'),
+                    cardholder_name: val('cardholder_name'),
+                    installments: parseInt(val('installments'), 10),
+                });
+            }
+
+            if (state.method === 'boleto') {
+                Object.assign(payload, {
+                    first_name: val('first_name'),
+                    last_name: val('last_name'),
+                    zip_code: val('zip_code'),
+                    street_name: val('street_name'),
+                    street_number: val('street_number'),
+                    neighborhood: val('neighborhood'),
+                    city: val('city'),
+                    federal_unit: val('federal_unit'),
+                });
+            }
+
+            return payload;
+        }
+
+        payBtn.addEventListener('click', async () => {
+            const errors = validate();
+            if (errors.length) {
+                showToast(errors[0]);
+                payBtn.animate(
+                    [{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }],
+                    { duration: 300 }
+                );
+                return;
+            }
+
+            setLoading(true);
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(buildPayload()),
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(typeof result.detail === 'string' ? result.detail : 'Não foi possível processar o pagamento.');
+                }
+
+                showResult(result);
+            } catch (err) {
+                showToast(err.message || 'Erro de conexão. Tente novamente.');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        function setLoading(on) {
+            payBtn.disabled = on;
+            $('pay-btn-spinner').classList.toggle('hidden', !on);
+            $('pay-btn-arrow').classList.toggle('hidden', on);
+            $('pay-btn-label').textContent = on
+                ? 'Processando pagamento...'
+                : `Pagar ${brl(state.amount)}`;
+            payBtn.classList.toggle('animate-pulse-soft', on);
+        }
+
+        function showToast(message) {
+            const toast = $('toast');
+            $('toast-msg').textContent = message;
+            toast.classList.remove('hidden');
+            toast.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 250 });
+            clearTimeout(toast._t);
+            toast._t = setTimeout(() => toast.classList.add('hidden'), 4000);
+        }
+
+        // ============================================================
+        // Tela de resultado
+        // ============================================================
+        function showResult(result) {
+            const status = result.status || 'pending';
+            const method = state.method;
+            const extraEl = $('result-extra');
+            extraEl.innerHTML = '';
+            $('result-extra').className = 'mt-6 text-left';
+
+            const approved = status === 'approved';
+            let title, msg;
+
+            // Ícone de sucesso animado (SVG com stroke-dash)
+            const successIcon = `
+                <svg class="w-20 h-20" viewBox="0 0 52 52" fill="none">
+                    <circle class="check-circle" cx="26" cy="26" r="24" stroke="#10b981" stroke-width="3" fill="#ecfdf5"/>
+                    <path class="check-mark" d="M15 27l7 7 14-14" stroke="#10b981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>`;
+            const pendingIcon = `
+                <svg class="w-20 h-20" viewBox="0 0 52 52" fill="none">
+                    <circle cx="26" cy="26" r="24" stroke="#f59e0b" stroke-width="3" fill="#fffbeb"/>
+                    <circle cx="26" cy="26" r="8" stroke="#f59e0b" stroke-width="4" stroke-linecap="round" stroke-dasharray="38" stroke-dashoffset="10"/>
+                </svg>`;
+
+            if (method === 'card') {
+                $('result-icon').innerHTML = approved ? successIcon : pendingIcon;
+                title = approved ? 'Pagamento aprovado!' : 'Pagamento em processamento';
+                msg = approved
+                    ? 'Seu pagamento no cartão foi confirmado. Você receberá a confirmação por e-mail.'
+                    : 'Estamos aguardando a confirmacão da operadora do cartão. Você será notificado em breve.';
+            }
+
+            if (method === 'pix') {
+                $('result-icon').innerHTML = pendingIcon;
+                title = 'Escaneie o QR Code do Pix';
+                msg = 'Abra o app do seu banco e escaneie o código abaixo. O pagamento é confirmado na hora.';
+
+                const qrBase64 = result.point_of_interaction?.transaction_data?.qr_code_base64;
+                const copyPaste = result.point_of_interaction?.transaction_data?.qr_code
+                    || result.transaction_data?.qr_code;
+
+                if (qrBase64) {
+                    extraEl.insertAdjacentHTML('beforeend', `
+                        <div class="rounded-xl border border-slate-200 bg-white p-4 text-center">
+                            <img src="data:image/png;base64,${qrBase64}" alt="QR Code Pix"
+                                class="mx-auto w-48 h-48" style="image-rendering: pixelated">
+                            <p class="mt-2 text-xs text-slate-400">Válido por 24 horas</p>
+                        </div>`);
+                }
+
+                if (copyPaste) {
+                    const codeId = 'pix-copy-paste';
+                    extraEl.insertAdjacentHTML('beforeend', `
+                        <div class="mt-4">
+                            <span class="text-sm font-medium text-slate-700">Pix Copia e Cola</span>
+                            <div class="mt-1.5 flex gap-2">
+                                <textarea id="${codeId}" readonly rows="3" class="flex-1 resize-none rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-xs text-slate-500 break-all">${copyPaste}</textarea>
+                                <button data-copy="${codeId}" class="shrink-0 rounded-lg bg-slate-900 text-white px-4 text-sm font-semibold hover:bg-slate-700 transition self-stretch">Copiar</button>
+                            </div>
+                        </div>`);
+                }
+            }
+
+            if (method === 'boleto') {
+                $('result-icon').innerHTML = pendingIcon;
+                title = 'Boleto gerado!';
+                msg = 'Pague o boleto até a data de vencimento. A confirmação pode levar até 2 dias úteis.';
+
+                // A URL do boleto vem em "transaction_details" (não em "transaction_data")
+                const url = result.transaction_details?.external_resource_url
+                    || result.transaction_data?.external_resource_url;
+                // A linha digitável pode vir em transaction_data.qr_code ou no payment_method_reference_id
+                const barcode = result.transaction_data?.qr_code
+                    || result.transaction_details?.payment_method_reference_id;
+                const paymentId = result.id;
+
+                if (url) {
+                    extraEl.insertAdjacentHTML('beforeend', `
+                        <a href="${url}" target="_blank" rel="noopener"
+                            class="flex items-center justify-center gap-2 w-full rounded-xl bg-brand-500 text-white px-5 py-3.5 text-sm font-semibold hover:bg-brand-600 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 10v6M9 14l3 3 3-3"/><path d="M4 8v10a2 2 0 002 2h12a2 2 0 002-2V8M9 4h6v4H9z"/></svg>
+                            Visualizar e baixar o boleto
+                        </a>
+                        <p class="mt-2 text-center text-xs text-slate-400">O boleto abre em uma nova página do Mercado Pago, com opção de PDF/impressão.</p>`);
+                }
+                if (barcode) {
+                    extraEl.insertAdjacentHTML('beforeend', `
+                        <div id="boleto-bar" class="mt-4">
+                            <span class="text-sm font-medium text-slate-700">Linha digitável / código de barras</span>
+                            <div class="mt-1.5 flex gap-2">
+                                <textarea readonly rows="2" class="flex-1 resize-none rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-xs text-slate-500 break-all">${barcode}</textarea>
+                                <button class="shrink-0 rounded-lg bg-slate-900 text-white px-4 text-sm font-semibold hover:bg-slate-700 transition self-stretch"
+                                    onclick="copyBoleto(this)">Copiar</button>
+                            </div>
+                        </div>`);
+                }
+                if (paymentId) {
+                    extraEl.insertAdjacentHTML('beforeend', `
+                        <p class="mt-3 text-xs text-slate-400">ID do pagamento: <span class="font-mono text-slate-600">${paymentId}</span></p>`);
+                }
+            }
+
+            $('result-title').textContent = title || 'Pagamento registrado';
+            $('result-msg').textContent = msg || '';
+
+            extraEl.querySelectorAll('[data-copy]').forEach(btn => {
+                btn.addEventListener('click', () => copyText($(btn.dataset.copy)));
+            });
+
+            // Esconde formulário e exibe resultado com animação
+            formCol.classList.add('hidden');
+            summaryCol.classList.add('hidden');
+            $('result-screen').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function copyText(textarea) {
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                textarea.animate([{ backgroundColor: '#ecfdf5' }, { backgroundColor: '#f8fafc' }], { duration: 800 });
+            });
+        }
+        function copyBoleto(btn) { copyText(btn.closest('div').querySelector('textarea')); }
+
+        // ============================================================
+        // Label do botão de pagamento
+        // ============================================================
+        function updatePayButtonLabel() {
+            const labels = {
+                card: `Pagar <span class="font-extrabold">${brl(state.amount)}</span>`,
+                pix: `Pagar com Pix <span class="font-extrabold">${brl(state.amount)}</span>`,
+                boleto: `Gerar boleto de <span class="font-extrabold">${brl(state.amount)}</span>`,
+            };
+            $('pay-btn-label').innerHTML = labels[state.method];
+        }
+
+        // Inicialização
+        updatePayButtonLabel();
+    </script>
+</body>
+</html>
